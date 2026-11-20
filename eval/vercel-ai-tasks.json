@@ -1,0 +1,62 @@
+{
+  "repo": "vercel-ai",
+  "description": "8 zero-keyword / behavioral localization tasks across the 10,015-file, 80+ package vercel/ai monorepo",
+  "tasks": [
+    {
+      "id": "prompt-injection-url-guard",
+      "category": "zero-keyword",
+      "query": "prevents an AI model from smuggling data via fabricated links by checking that a target URL appeared in human user messages rather than assistant or tool outputs, stripping trailing punctuation and fragments",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that prevents an AI model from smuggling data out via fabricated links by checking that a target link actually appeared in human-authored conversation turns rather than assistant or tool outputs, stripping trailing punctuation and fragments before whole-link comparison.",
+      "expectedFiles": ["packages/tool-web-fetch/src/is-url-in-user-messages.ts"]
+    },
+    {
+      "id": "policy-dry-run-wrapper",
+      "category": "zero-keyword",
+      "query": "wraps a tool-approval policy in a non-blocking observation mode so policy verdicts are emitted via callback while allowing calls through until enforcement is enabled",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that wraps a tool-approval policy in a non-blocking observation mode so policy verdicts are recorded via a callback while always letting calls proceed until enforcement is explicitly enabled.",
+      "expectedFiles": ["packages/policy-opa/src/shadow.ts"]
+    },
+    {
+      "id": "webhook-hmac-replay-verifier",
+      "category": "zero-keyword",
+      "query": "authenticates incoming event delivery requests using HMAC SHA-256 over a timestamped payload prefix, rejecting stale deliveries older than five minutes and supporting rotated signing keys",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that authenticates incoming event delivery requests using HMAC over a timestamped payload prefix, rejecting stale deliveries older than five minutes and supporting multiple rotated signing keys.",
+      "expectedFiles": ["packages/mcp/src/tool/mcp-event-signature.ts"]
+    },
+    {
+      "id": "ssrf-private-network-blocker",
+      "category": "zero-keyword",
+      "query": "guards remote downloads against SSRF by blocking private IPv4/IPv6 ranges and local or internal hostnames while allowing inline data URIs and stripping trailing hostname dots",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that guards remote downloads against SSRF by blocking private IPv4/IPv6 ranges and local/internal hostnames while allowing inline data URIs and stripping trailing hostname dots.",
+      "expectedFiles": ["packages/provider-utils/src/validate-download-url.ts"]
+    },
+    {
+      "id": "incomplete-json-repair-scanner",
+      "category": "zero-keyword",
+      "query": "single-pass state-machine scanner over a truncated JSON string that auto-closes unfinished strings, objects, arrays, and literals",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that performs a single-pass state-machine scan over a truncated JSON string to auto-close unfinished strings, objects, arrays, and literals so it can be parsed cleanly.",
+      "expectedFiles": ["packages/ai/src/util/fix-json.ts"]
+    },
+    {
+      "id": "sequential-stream-concatenator",
+      "category": "zero-keyword",
+      "query": "exposes a single outer ReadableStream into which inner streams can be dynamically appended sequentially, pausing pulls until the next inner stream arrives or the outer stream closes",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that exposes a single outer ReadableStream into which inner streams can be dynamically appended one after another, pausing pulls until the next inner stream arrives or the outer stream closes.",
+      "expectedFiles": ["packages/ai/src/util/create-stitchable-stream.ts"]
+    },
+    {
+      "id": "streaming-delimiter-prefix-matcher",
+      "category": "zero-keyword",
+      "query": "searches a text buffer for either a complete target substring or the longest suffix at the end of the buffer that matches a prefix of the target split across stream chunks",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that searches a text buffer for either a complete target substring or the longest suffix at the end of the buffer that could be the start of that substring split across chunks.",
+      "expectedFiles": ["packages/ai/src/util/get-potential-start-index.ts"]
+    },
+    {
+      "id": "deterministic-object-digest",
+      "category": "zero-keyword",
+      "query": "deterministically serializes arbitrary nested objects by sorting keys recursively before computing a URL-safe base64 SHA-256 content hash",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that deterministically serializes arbitrary nested objects by sorting object keys recursively before computing a URL-safe base64 SHA-256 content hash.",
+      "expectedFiles": ["packages/ai/src/util/canonical-hash.ts"]
+    }
+  ]
+}

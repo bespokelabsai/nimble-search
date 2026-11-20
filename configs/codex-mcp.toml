@@ -1,0 +1,5 @@
+# Add this block to ~/.codex/config.toml (or .codex/config.toml in a repo)
+[mcp_servers.nimble_search]
+command = "node"
+args = ["/path/to/nimble-search/dist/cli.js", "mcp"]
+env_vars = ["BESPOKE_API_KEY"]

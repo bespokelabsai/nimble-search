@@ -1,0 +1,41 @@
+{
+  "repo": "hono",
+  "description": "5 zero-keyword / vocabulary-mismatch localization tasks with NO leaked identifiers, status codes, or constants",
+  "tasks": [
+    {
+      "id": "lazy-engine-picker",
+      "category": "zero-keyword",
+      "query": "delays deciding which underlying route-matching strategy to lock in until the very first lookup arrives, skipping candidates that reject a registered pattern",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that delays deciding which underlying route-matching strategy to lock in until the very first lookup arrives, skipping candidates that reject a registered pattern.",
+      "expectedFiles": ["src/router/smart-router/router.ts"]
+    },
+    {
+      "id": "browser-forged-submit-guard",
+      "category": "zero-keyword",
+      "query": "blocks forged cross-site browser mutations by inspecting browser-attached navigation metadata headers and request source domains rather than using synchronizer tokens",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that blocks forged cross-site browser mutations by inspecting browser-attached navigation metadata headers and request source domains rather than using synchronizer tokens.",
+      "expectedFiles": ["src/middleware/csrf/index.ts"]
+    },
+    {
+      "id": "throttled-work-gate",
+      "category": "zero-keyword",
+      "query": "limits how many async tasks can execute simultaneously, optionally keeping a slot reserved for a brief pause after a task finishes before letting queued work proceed",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that limits how many async tasks can execute simultaneously, optionally keeping a slot reserved for a brief pause after a task finishes before letting queued work proceed.",
+      "expectedFiles": ["src/utils/concurrent.ts"]
+    },
+    {
+      "id": "side-channel-secret-check",
+      "category": "zero-keyword",
+      "query": "checks whether two secrets are identical without leaking length or prefix match progress through execution duration",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that checks whether two secrets are identical without leaking length or prefix match progress through execution duration.",
+      "expectedFiles": ["src/utils/buffer.ts"]
+    },
+    {
+      "id": "precomputed-route-relocator",
+      "category": "zero-keyword",
+      "query": "attaches handlers into pre-built route lookup tables using a saved mapping of slot offsets instead of compiling route expressions from scratch",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that attaches handlers into pre-built route lookup tables using a saved mapping of slot offsets instead of compiling route expressions from scratch.",
+      "expectedFiles": ["src/router/reg-exp-router/prepared-router.ts"]
+    }
+  ]
+}

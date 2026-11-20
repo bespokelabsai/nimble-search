@@ -1,0 +1,76 @@
+{
+  "repo": "hono",
+  "description": "10 ground-truth file localization tasks on the 548-file Hono codebase (9 conceptual/behavioral + 1 exact-identifier control)",
+  "tasks": [
+    {
+      "id": "timing-safe-compare",
+      "category": "conceptual-misleading-name",
+      "query": "constant-time string comparison that hashes both inputs and XORs character codes to prevent timing side-channel attacks",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that performs constant-time string comparison by hashing both inputs and XORing character codes to prevent timing attacks.",
+      "expectedFiles": ["src/utils/buffer.ts"]
+    },
+    {
+      "id": "concurrency-pool",
+      "category": "conceptual",
+      "query": "bounded concurrency task execution pool with an optional cooldown interval before releasing slots",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that implements a bounded concurrency task runner pool with an optional cooldown delay before releasing each active slot.",
+      "expectedFiles": ["src/utils/concurrent.ts"]
+    },
+    {
+      "id": "static-path-traversal",
+      "category": "conceptual-disambiguation",
+      "query": "rejects parent directory traversal segments (..) and appends default index.html when resolving static asset file paths",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that rejects parent-directory traversal segments (`..`) and appends a default `index.html` document when turning a requested path into a static file path.",
+      "expectedFiles": ["src/utils/filepath.ts"]
+    },
+    {
+      "id": "streaming-suspense-nonce",
+      "category": "conceptual",
+      "query": "server-rendered JSX async Suspense boundary catching thrown promises and supporting a CSP script nonce for streamed fallback replacement",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) where server-rendered JSX async Suspense boundaries catch thrown Promises and read a CSP script nonce from streaming context.",
+      "expectedFiles": ["src/jsx/streaming.ts"]
+    },
+    {
+      "id": "chunked-stream-digest",
+      "category": "conceptual",
+      "query": "reads a ReadableStream in fixed 256 KiB chunks and merges byte buffers to incrementally compute a digest hash",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that reads a ReadableStream in fixed 256 KiB chunks, accumulating and merging byte buffers to incrementally compute a digest hash.",
+      "expectedFiles": ["src/middleware/etag/digest.ts"]
+    },
+    {
+      "id": "client-response-parser",
+      "category": "conceptual-misleading-name",
+      "query": "detects whether a fetch Response is JSON or text, skips null-body statuses like 204 or 304, and throws a structured error with statusCode and detail when not ok",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that inspects a fetch Response content-type to parse JSON or text, skips body parsing for null-body statuses like 204/304, and throws a structured error with statusCode and detail when the response is not ok.",
+      "expectedFiles": ["src/client/fetch-result-please.ts"]
+    },
+    {
+      "id": "content-negotiation-qvalue",
+      "category": "conceptual",
+      "query": "ranks media types by quality value q and specificity so an explicitly rejected exact media type (q=0) cannot be re-enabled by a subtype wildcard",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that ranks Accept media types by quality value (`q`) and specificity so that an explicitly rejected exact media type (`q=0`) cannot be re-enabled by a subtype wildcard.",
+      "expectedFiles": ["src/helper/accepts/accepts.ts"]
+    },
+    {
+      "id": "middleware-logical-combinators",
+      "category": "conceptual",
+      "query": "logical middleware combinators that short-circuit on the first succeeding handler or abort if any middleware or predicate fails",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that provides logical middleware combinators that short-circuit after the first succeeding handler/predicate or abort when any fails.",
+      "expectedFiles": ["src/middleware/combine/index.ts"]
+    },
+    {
+      "id": "cloudflare-no-color",
+      "category": "conceptual",
+      "query": "checks whether ANSI terminal colors are disabled via NO_COLOR across Node, Deno, and Cloudflare Workers using dynamic cloudflare:workers import",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that checks whether terminal ANSI colors should be disabled across Node, Deno, and Cloudflare Workers via a dynamic `cloudflare:workers` import.",
+      "expectedFiles": ["src/utils/color.ts"]
+    },
+    {
+      "id": "exact-error-code",
+      "category": "exact-symbol",
+      "query": "defines ERR_INVALID_IP_ADDRESS and throws TypeError with that error code for malformed IPv4 or IPv6 addresses",
+      "prompt": "Locate the primary implementation file (not tests or barrel re-exports) that defines the constant `ERR_INVALID_IP_ADDRESS` and throws a `TypeError` with that error code for malformed IPv4 or IPv6 addresses.",
+      "expectedFiles": ["src/utils/ipaddr.ts"]
+    }
+  ]
+}

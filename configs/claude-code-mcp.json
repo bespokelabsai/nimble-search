@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "nimble-search": {
+      "command": "node",
+      "args": ["/path/to/nimble-search/dist/cli.js", "mcp"],
+      "env": {
+        "BESPOKE_API_KEY": "${BESPOKE_API_KEY}"
+      }
+    }
+  }
+}
