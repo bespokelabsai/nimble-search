@@ -21,7 +21,7 @@ SEARCH OPTIONS:
   -d, --dir <path>          Repository root directory (default: current directory)
   -p, --path <subdir>       Relative subdirectory inside --dir to narrow scope
   -k, --top <n>             Max files to return (default: 10)
-      --fast                Stage 1 file cards only (skip Stage 2 full-file verification)
+      --fast                Stage 1 file cards only (skip Stage 2 candidate source verification)
       --deep                Verify top 24 files in Stage 2 (default balanced verifies up to 10)
   -e, --ext <list>          Comma-separated file extensions, e.g. ts,tsx,py
   -r, --role <list>         Filter by verified role: implementation,caller,types,config,test,docs

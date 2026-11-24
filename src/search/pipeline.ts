@@ -405,7 +405,7 @@ export async function searchCodebase(
 
     options.onProgress?.({
       stage: "stage2",
-      message: `Verifying full contents of top ${toVerify.length} files...`,
+      message: `Verifying source excerpts of top ${toVerify.length} files...`,
     });
 
     const contentQuestions = buildContentQuestions(query);

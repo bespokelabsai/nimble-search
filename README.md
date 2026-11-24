@@ -4,8 +4,93 @@
 
 Find the right file from a plain-English description of *what it does* — with **no vector database, no embedding pipeline, and no background indexing daemon**. Works immediately on fresh clones and uncommitted local edits.
 
+## Quickstart
+
+Requires **Node.js >= 20** and a Bespoke Labs API key (`BESPOKE_API_KEY`). Search requests send repository information to the configured Nimble API; see [Data sent to the API](#data-sent-to-the-api).
+
+### Install
+
 ```bash
-$ nimble-search "where rate limiting, HTTP retries, and payload batch splitting happen"
+git clone https://github.com/bespokelabsai/nimble-search.git
+cd nimble-search
+npm ci
+npm run build
+
+export BESPOKE_API_KEY="your-bespoke-api-key"
+```
+
+### Search your repository
+
+Replace `/path/to/your/repo` with the repository you want to search. These commands run from the `nimble-search` checkout you just built:
+
+```bash
+# Check the searchable files locally; makes no API calls.
+node dist/cli.js scan --dir /path/to/your/repo
+
+# Find candidate files from a description of their behavior.
+node dist/cli.js "where failed requests are retried with backoff" \
+  --dir /path/to/your/repo --fast --top 5
+```
+
+Without `--dir`, the CLI searches the current directory, which at this point is the `nimble-search` checkout itself.
+
+Open the highest-ranked candidate in your editor and verify the relevant implementation. Once you know a symbol name, use `rg -n 'SYMBOL' /path/to/your/repo` for references, or `rg -l 'SYMBOL' /path/to/your/repo` if you only need filenames. If the candidates do not match, refine the description or narrow the search with `--path` or `--ext`.
+
+### Use the short command or connect your agent
+
+Optionally expose the CLI on your PATH:
+
+```bash
+npm link
+nimble-search "where failed requests are retried with backoff" \
+  --dir /path/to/your/repo --fast --top 5
+```
+
+If you skip `npm link`, replace `nimble-search` in the examples below with `node /absolute/path/to/nimble-search/dist/cli.js`.
+
+Run `node dist/cli.js setup` to print configuration snippets with the installed paths, then follow [Agent Integration](#agent-integration-claude-code-codex--antigravity) for MCP and skill setup. `setup` prints instructions; it does not modify your agent configuration.
+
+### Choose a search mode
+
+| Mode | CLI | MCP `search_files` | What it does |
+| --- | --- | --- | --- |
+| Fast | `--fast` | Default, or `mode: "fast"` | Ranks file cards. Start here when you will read the candidate files yourself. |
+| Balanced | Default (omit `--fast` and `--deep`) | `mode: "balanced"` | Adds candidate source verification and role tags. |
+| Deep | `--deep` | `mode: "deep"` | Verifies up to 24 candidates. |
+
+For role filtering, use CLI `--role implementation`, or MCP `roles: ["implementation"]` with `mode: "balanced"` (omitting MCP `mode` also selects balanced when roles are supplied). Fast results have no verified role tags.
+
+Verification scores relevance from candidate source content. Files larger than the default **24,000-character excerpt budget** are represented by their beginning, query-matching middle sections, and end. It does not guarantee that every line was reviewed or that the code is correct; inspect the implementation before relying on it.
+
+### Data sent to the API
+
+The default endpoint is `https://api.bespokelabs.ai`. Every search sends your query and file cards containing relative paths, language, line counts, leading summaries/comments, and extracted symbols. Cards can also contain short code previews. Large repositories can additionally send directory summaries for triage.
+
+Balanced and deep modes also send source content from candidate files, excerpted as described above. File discovery and the file-card cache are local; `scan` / `scan_repo` make no API calls. Searches honor `.gitignore` and `.nimbleignore` by default. Use `--base-url` or `NIMBLE_BASE_URL` for a compatible self-hosted endpoint.
+
+### More examples
+
+These examples assume `npm link` was run. Set `--dir` to the repository you want to search:
+
+```bash
+# Balanced search: candidate source verification and role tags.
+nimble-search "where JWT refresh tokens are rotated" --dir /path/to/your/repo
+
+# Filter to primary implementation files.
+nimble-search "where MCP tools are registered" --dir /path/to/your/repo --role implementation
+
+# Narrow a fast search by subdirectory and file extension.
+nimble-search "retry failed webhooks with backoff" \
+  --dir /path/to/your/repo --path services/billing --ext ts,tsx --fast
+
+# Structured results and a timing/usage trace.
+nimble-search "database migration runner" --dir /path/to/your/repo --fast --json --verbose
+```
+
+Example balanced-search output from the `nimble-search` repository:
+
+```bash
+$ nimble-search "where rate limiting, HTTP retries, and payload batch splitting happen" --dir /path/to/nimble-search --top 5
 
 Found 5 files (25 files scanned, 8 verified, 3.6s, 25.4k tok, $0.0010):
 
@@ -17,15 +102,17 @@ Found 5 files (25 files scanned, 8 verified, 3.6s, 25.4k tok, $0.0010):
 5. 0.26 [types]           src/nimble/types.ts  (TypeScript, 81 lines)
 ```
 
+The `tok` count in the output header is Nimble API input usage, not the size of the returned search results. Dollar amounts are estimates; see [Interpreting token and cost savings](#interpreting-token-and-cost-savings).
+
 ---
 
-## Why Nimble instead of `grep` or a vector DB?
+## When to use Nimble, grep, or a vector DB
 
 | Approach | Strength | Weakness |
 | --- | --- | --- |
-| **`grep` / `ripgrep`** | Instant (~20ms), free, exact for known symbols/regexes | Struggles on conceptual queries in large monorepos; dumps noisy docs/tests/fixtures and burns 4–10 frontier-model turns |
-| **Embeddings / Vector DB** | Cheap query time on huge repos | Needs a persistent index to keep in sync; blind to uncommitted edits; bi-encoder cosine similarity misses fine behavioral distinctions |
-| **`nimble-search`** | **Zero index**, sees uncommitted edits instantly, true cross-attention via Nimble's System One `score` & `choice` logprobs (~$0.04 / 1M input tokens, output free) | ~1–6s API round-trip — best as a **companion** to `grep`, not a replacement for exact symbol lookups |
+| **`grep` / `ripgrep`** | Local, fast, exact for known symbols/regexes; `rg -l` returns only filenames | Behavioral queries may require trying several keywords; broad line searches can return noisy results |
+| **Embeddings / Vector DB** | Cheap query time on huge repos | Needs an index kept in sync with local edits; retrieval quality depends on the embedding model |
+| **`nimble-search`** | **Zero index**, sees local edits, ranks files by a behavioral description | Adds API latency and usage; savings depend on the query, repository, and grep baseline |
 
 ### When to reach for each tool
 
@@ -46,7 +133,7 @@ flowchart LR
     C --> D
     D --> E{"mode?"}
     E -- "fast (MCP default)" --> F["Ranked Files + Symbols"]
-    E -- "balanced / deep" --> G["Stage 2: Full-File Verification\n(Parallel relevance score + role choice:\nimplementation | caller | types | config | test | docs)"]
+    E -- "balanced / deep" --> G["Stage 2: Candidate Source Verification\n(Parallel relevance score + role choice:\nimplementation | caller | types | config | test | docs)"]
     G --> F
 ```
 
@@ -90,49 +177,19 @@ Controlled comparison of `grep + find + read_file` vs `+ nimble-search (fast)` u
 | **Frontier Output Tokens** | 1,218 | **967** | **-20.6%** (-251 tok) |
 | **Tool-Output Context Bloat** | 10,119 chars | **6,834 chars** | **-32.5%** |
 | **Hardest Tasks Wall-Clock** *(HMAC / SSRF)* | 33.0s / 21.0s | **15.6s / 15.3s** | **1.4x–2.1x faster** |
-| **Nimble Spend** | \$0.0000 | **\$0.0057** | **Net cheaper on frontier LLMs** |
+| **Nimble Spend** | \$0.0000 | **\$0.0057** | Additional search cost |
 
-On frontier-model pricing (e.g., \$3 / \$15 per 1M tokens), saving ~3.25k uncached input tokens + 251 output tokens saves **~\$0.0135/task** against **\$0.0057** in Nimble spend (**~2.4x net savings**, or **~12x** at Opus-tier pricing). On smaller clean repos (~500 files), `grep` stays faster on wall-clock time; the crossover clearly favors `nimble-search` on large monorepos (thousands of files) where `grep` hits noisy docs, examples, and fixture dumps.
+### Interpreting token and cost savings
 
----
+These results describe the reported tasks and baselines above, not a guarantee for every repository. Distinguish three measurements:
 
-## Quickstart
+- **Coding-agent context:** tokens in search results and subsequent file reads. Compact ranked results can reduce context compared with broad line-based grep, while `rg -l` can return substantially fewer tokens when useful keywords are known.
+- **Nimble API usage:** additional input/output tokens processed by the search model. These are separate from the coding agent's tokens; fewer result tokens do not establish fewer total model tokens.
+- **Dollar cost:** the coding agent's cost plus Nimble's cost. Include follow-up reads, output tokens, and prompt-cache pricing when comparing complete workflows.
 
-Requires **Node.js >= 20** and a Bespoke Labs API key (`BESPOKE_API_KEY`).
+For illustration, at assumed coding-model rates of $3 per million uncached input tokens and $15 per million output tokens, the reported reduction of 3,251 input and 251 output tokens saves about $0.0135 per task before search cost. Subtracting $0.0057 of Nimble cost leaves about $0.0078 in net savings under those assumptions. Different models, cache hits, search strategies, and follow-up reads can change the result.
 
-```bash
-git clone <repo-url> nimble-search
-cd nimble-search
-npm install
-npm run build
-
-export BESPOKE_API_KEY="your-bespoke-api-key"
-
-# Optional: expose `nimble-search` globally on PATH
-npm link
-```
-
-### Example commands
-
-```bash
-# Default CLI search (Stage 1 + Stage 2 full-file verification + role tags)
-nimble-search "where JWT refresh tokens are rotated"
-
-# Fast mode (Stage 1 file cards only — lowest latency & cost)
-nimble-search "how nested gitignore rules and binaries are skipped" --fast
-
-# Filter to primary implementation files only
-nimble-search "where MCP tools are registered" --role implementation
-
-# Scope to a subdirectory and specific extensions in a monorepo
-nimble-search "retry failed webhooks with backoff" --dir ~/my-monorepo --path services/billing --ext ts,tsx
-
-# Inspect searchable files & cache status (0 API calls)
-nimble-search scan --dir ~/my-monorepo
-
-# Structured JSON output + stderr timing/cost trace
-nimble-search "database migration runner" --json --verbose
-```
+The CLI's Nimble cost estimate uses a hardcoded input rate of $0.04 per million tokens and no output charge. It is an estimate, not an invoice or a live pricing lookup. To evaluate your own workflow, compare equivalent tasks and answer quality against both scoped line searches and filename-only grep, and record coding-agent usage and Nimble usage separately.
 
 ---
 
@@ -193,7 +250,7 @@ cp /path/to/nimble-search/skills/nimble-search/SKILL.md ~/.gemini/antigravity/sk
 
 | Tool | Description |
 | --- | --- |
-| `search_files` | Semantic file search by natural-language description. Defaults to `mode: "fast"` for coding agents (since the agent reads the top file directly); accepts `directory`, `subpath`, `top_k`, `mode` (`"fast" \| "balanced" \| "deep"`), `extensions`, `roles`, `min_score`, and `format`. Automatically uses `balanced` if `roles` is specified. |
+| `search_files` | Semantic file search by natural-language description. Defaults to `mode: "fast"` for coding agents (since the agent reads the top file directly); accepts `directory`, `subpath`, `top_k`, `mode` (`"fast" \| "balanced" \| "deep"`), `extensions`, `roles`, `min_score`, and `format`. Uses `balanced` when `roles` is supplied and `mode` is omitted; explicitly select `balanced` or `deep` for role filtering. |
 | `scan_repo` | Zero-API-call inventory of searchable files, language breakdown, card cache status, and whether directory triage will trigger. |
 
 ---
