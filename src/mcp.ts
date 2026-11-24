@@ -62,7 +62,7 @@ export function createNimbleSearchMcpServer(options: McpServerStartOptions = {})
           .enum(["fast", "balanced", "deep"])
           .optional()
           .describe(
-            "Search depth: 'fast' (default for agents — Stage 1 file-card scoring, fastest & cheapest since you will read_file the top hit anyway), 'balanced' (adds Stage 2 full-file verification with [implementation]/[caller]/[test] role tags), or 'deep' (verifies top 24 files)."
+            "Search depth: 'fast' (default for agents — Stage 1 file-card scoring, fastest & cheapest since you will read_file the top hit anyway), 'balanced' (adds Stage 2 candidate source verification with [implementation]/[caller]/[test] role tags), or 'deep' (verifies top 24 files)."
           ),
         extensions: z
           .array(z.string())
